@@ -7,6 +7,7 @@ namespace App\Command;
 use App\Enum\OperationTypeEnum;
 use App\Handler\DepositHandler;
 use App\Handler\WithdrawHandler;
+use App\Service\ExchangeRatesApi\Handler\GetLatestExchangeRatesHandler;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use Brick\Money\Money;
@@ -30,6 +31,7 @@ class ProcessDepositWithdrawCommand extends Command
         private readonly string $projectDir,
         private readonly WithdrawHandler $withdrawHandler,
         private readonly DepositHandler $depositHandler,
+        private readonly GetLatestExchangeRatesHandler $exchangeRatesHandler,
         ?string $name = null,
     ) {
         parent::__construct($name);
@@ -57,8 +59,18 @@ class ProcessDepositWithdrawCommand extends Command
 
         $data = array_map('str_getcsv', file($this->projectDir.self::DATA_PATH.$fileName));
 
+        $rates = $this->exchangeRatesHandler->getRates();
+
+        if ($rates->getError()) {
+            $output->writeln('Error when getting rates from API: '.$rates->getError());
+
+            return Command::FAILURE;
+        }
+
         foreach ($data as $item) {
-            $item[4] = self::BASE_CURRENCY === $item[5] ? $item[4] : $this->convertToBaseCurrency($item[4], $item[5]);
+            $item[4] = self::BASE_CURRENCY === $item[5] ?
+                $item[4] :
+                $this->convertToBaseCurrency($item[4], $rates->getRate($item[5]));
 
             $item[3] === OperationTypeEnum::Deposit->value ?
                 $commission = $this->depositHandler->calculateDepositCommission($item[4]) :
@@ -66,34 +78,22 @@ class ProcessDepositWithdrawCommand extends Command
 
             $commission = self::BASE_CURRENCY === $item[5] ?
                 $commission :
-                $this->convertToOperationCurrency($commission, $item[5]);
+                $this->convertToOperationCurrency($commission, $item[5], $rates->getRate($item[5]));
 
-            $output->writeln($item[3].' '.$commission);
+            $output->writeln($commission);
         }
 
         return Command::SUCCESS;
     }
 
-    private function convertToBaseCurrency(string $amount, string $currency)
+    private function convertToBaseCurrency(string $amount, float $rate)
     {
-        if ('USD' === $currency) {
-            return bcdiv($amount, '1.1497', 5);
-        }
-
-        if ('JPY' === $currency) {
-            return bcdiv($amount, '129.53', 5);
-        }
+        return bcdiv($amount, (string) $rate, 5);
     }
 
-    private function convertToOperationCurrency(string $commission, string $currency)
+    private function convertToOperationCurrency(string $commission, string $currency, float $rate)
     {
-        if ('USD' === $currency) {
-            $amount = bcmul($commission, '1.1497', 5);
-        }
-
-        if ('JPY' === $currency) {
-            $amount = bcmul($commission, '129.53', 5);
-        }
+        $amount = bcmul($commission, (string) $rate, 5);
 
         $currency = Currency::of($currency);
         $scale = $currency->getDefaultFractionDigits();

@@ -6,6 +6,8 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             $projectDir: '%kernel.project_dir%'
+            $ExchangeRatesApiBaseUrl: '%env(EXCHANGE_RATES_API_BASE_URL)%'
+            $ExchangeRatesApiKey: '%env(EXCHANGE_RATES_API_KEY)%'
     App\:
         resource: '../src/'
         exclude:
