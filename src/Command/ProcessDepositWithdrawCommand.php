@@ -101,6 +101,6 @@ class ProcessDepositWithdrawCommand extends Command
 
         $commission = Money::ofMinor($scaledAmount, $currency, roundingMode: RoundingMode::CEILING);
 
-        return $commission->getAmount()->toScale($scale);
+        return (string) $commission->getAmount()->toScale($scale);
     }
 }

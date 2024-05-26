@@ -6,7 +6,7 @@ use App\Service\ExchangeRatesApi\Client\ExchangeRatesClient;
 use App\Service\ExchangeRatesApi\Request\GetExchangeRateRequest;
 use App\Service\ExchangeRatesApi\Response\GetExchangeRateResponse;
 
-readonly class GetLatestExchangeRatesHandler
+class GetLatestExchangeRatesHandler
 {
     public function __construct(private ExchangeRatesClient $exchangeRatesClient)
     {
