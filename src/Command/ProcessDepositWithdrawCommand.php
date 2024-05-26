@@ -50,13 +50,14 @@ class ProcessDepositWithdrawCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fileName = $input->getArgument('file');
-        if (!file_exists($this->projectDir.self::DATA_PATH.$fileName)) {
-            $output->writeln('File not found: '.$this->projectDir.self::DATA_PATH.$fileName);
+        $filePath = $this->projectDir.self::DATA_PATH.$fileName;
+        if (!file_exists($filePath)) {
+            $output->writeln('File not found: '.$filePath);
 
             return Command::FAILURE;
         }
 
-        $data = array_map('str_getcsv', file($this->projectDir.self::DATA_PATH.$fileName));
+        $data = array_map('str_getcsv', file($filePath));
 
         $rates = $this->exchangeRatesHandler->getRates();
         if ($rates->getError()) {
