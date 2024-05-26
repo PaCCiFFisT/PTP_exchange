@@ -49,13 +49,11 @@ class WithdrawHandler
         }
 
         $limitDiff = bcsub($amount, $this->clientWithdraws[$clientId]['freeLimit']);
-        if ($limitDiff > 0) {
-            $this->updateClientWithdraws($clientId, $amount);
+        $this->updateClientWithdraws($clientId, $amount);
 
+        if ($limitDiff > 0) {
             return CommissionHelper::calculateCommission($limitDiff, self::PRIVATE_WITHDRAW_COMMISSION);
         }
-
-        $this->updateClientWithdraws($clientId, $amount);
 
         return '0.00';
     }

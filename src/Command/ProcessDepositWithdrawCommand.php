@@ -50,7 +50,6 @@ class ProcessDepositWithdrawCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fileName = $input->getArgument('file');
-
         if (!file_exists($this->projectDir.self::DATA_PATH.$fileName)) {
             $output->writeln('File not found: '.$this->projectDir.self::DATA_PATH.$fileName);
 
@@ -60,7 +59,6 @@ class ProcessDepositWithdrawCommand extends Command
         $data = array_map('str_getcsv', file($this->projectDir.self::DATA_PATH.$fileName));
 
         $rates = $this->exchangeRatesHandler->getRates();
-
         if ($rates->getError()) {
             $output->writeln('Error when getting rates from API: '.$rates->getError());
 
@@ -86,12 +84,12 @@ class ProcessDepositWithdrawCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function convertToBaseCurrency(string $amount, float $rate)
+    private function convertToBaseCurrency(string $amount, float $rate): string
     {
         return bcdiv($amount, (string) $rate, 5);
     }
 
-    private function convertToOperationCurrency(string $commission, string $currency, float $rate)
+    private function convertToOperationCurrency(string $commission, string $currency, float $rate): string
     {
         $amount = bcmul($commission, (string) $rate, 5);
 

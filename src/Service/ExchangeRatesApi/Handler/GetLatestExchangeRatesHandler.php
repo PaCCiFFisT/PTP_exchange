@@ -8,7 +8,7 @@ use App\Service\ExchangeRatesApi\Response\GetExchangeRateResponse;
 
 class GetLatestExchangeRatesHandler
 {
-    public function __construct(private ExchangeRatesClient $exchangeRatesClient)
+    public function __construct(private readonly ExchangeRatesClient $exchangeRatesClient)
     {
     }
 
