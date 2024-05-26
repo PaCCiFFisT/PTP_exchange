@@ -1,4 +1,13 @@
 # PTP_exchange
 
 ## Description
-implementation of simple currency deposit and withdrawal system
+Simple implementation of currency deposit and withdrawal commission calculation
+
+## Usage
+1. Clone the repository `git clone https://github.com/PaCCiFFisT/PTP_exchange`
+2. run `composer install`
+3. copy `filename.csv` file to `./data` folder
+4. run `php bin/console app:process-deposit-withdrawal filename.csv`
+
+## Tests
+run `composer phpunit`
